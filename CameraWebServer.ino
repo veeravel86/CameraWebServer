@@ -1,5 +1,10 @@
 #include "esp_camera.h"
 #include <WiFi.h>
+// Include WiFi Manager library, that helps creating access point
+//Automatically switches between AP mode and Station mode based on whether saved Wi-Fi credentials are available
+#include <WiFiManager.h> 
+
+
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -39,6 +44,8 @@
 // ===========================
 const char *ssid = "Tele2_E5D696";
 const char *password = "iwhwrumm";
+
+
 
 void startCameraServer();
 void setupLedFlash(int pin);
@@ -141,6 +148,9 @@ void setup() {
   setupLedFlash(LED_GPIO_NUM);
 #endif
 
+
+//temporatily disabling the wifi connection
+/*
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
 
@@ -155,10 +165,33 @@ void setup() {
 
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
+  
+  Serial.println("' to connect");  
+*/
+
+//Wifimanager checks is ESP32 has saved credentials , if there is one uses that and connects(goes in station mode) if not creates an access point (goes in accesspoint mode) 
+WiFiManager wifiManager;
+
+//to be used only during QA stage, it clears the alreday saved credentials
+wifiManager.resetSettings();
+
+// If no saved credentials, create an Access Point
+wifiManager.autoConnect("ESP32-VM-CAM-Setup");
+
+// TO print local ip address after connecting to local wifi
+Serial.print("Local IP Address: ");
+Serial.println(WiFi.localIP());
+
+
+//starting the camera server
+Serial.println("Before starting camera server");
+startCameraServer();
+Serial.println("After strating camera server");
+
 }
 
 void loop() {
   // Do nothing. Everything is done in another task by the web server
   delay(10000);
 }
+
